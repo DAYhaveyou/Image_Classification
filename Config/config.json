@@ -1,0 +1,42 @@
+{
+    "experiment_name":"basemodel_demo2",
+
+    "model":"basenet",
+    "load_trained_paras": false,
+    "trained_paras_dir": "",
+
+    "train_print_freq": 20,
+
+    "dropout": 0.5,
+    "num_class": 2,
+
+    "mile_stone": [10],
+    "epoch_num": 21,
+    "val_freq": 10,
+
+    "crop_size": 224,
+    "scale_size": 224,
+
+    "batch_size":24,
+    "learning_rate":1e-4,
+    "learning_rate_decay":true,
+    "weight_decay":1e-3,
+
+    "output_path": "/data/lzq/education/dogcat_classify/Output_Files",
+    "file_path": {
+        "train": "/data/lzq/education/data/train",
+        "val": "/data/lzq/education/data/train",
+        "test": ""
+    },
+    "annotation_path": {
+      "train": "Labels/dc_train.json",
+      "val": "Labels/dc_val.json",
+      "test": ""
+    },
+
+    "pretrain": true,
+    "backbone": {
+        "resnet50": "/data/lzq/education/pretrain_parameters/resnet50/resnet50-19c8e357.pth"
+    }
+
+}
