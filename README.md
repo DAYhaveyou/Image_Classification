@@ -22,3 +22,5 @@ This figure illustrates the feature distribution of dog and cat images, in which
 | resnet50  | no | 60.78 | 
 
 This table shows the val accuracy of trianed model based on resnet50 W\O pretrianed parameters.
+
+test readme
