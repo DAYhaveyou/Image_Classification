@@ -33,6 +33,13 @@ def test_transform(crop_size, scale_size):
     return trans_test
 
 
+def img_transform(crop_size=224, scale_size=256):
+    trans_test = torchvision.transforms.Compose([
+        GroupScale(int(scale_size)),
+        GroupCenterCrop(int(crop_size))])
+    return trans_test
+
+
 '''
 #2)  DEFINED DATA LOADER 
 '''
@@ -70,15 +77,18 @@ class DogCatImgLoader(data.Dataset):
         '''
         describe: default function of data-loader class
         :param index:
-        :return: training data(process data), training label(label)
+        :return: training data(process data), training label(label), img_dir
         '''
         record = self.data_list[index]
         img_dir = record[0]
         label = record[1]
+        # img_dir = os.path.join(self.root_path, img_dir)
         img_val = self._load_image(img_dir)  # digital data
         process_data = self.transform(img_val)  # data augmentation and normalization
 
-        return index, process_data, label
+        ret_dict = {'index': index, 'data':process_data, 'label':label, 'img_dir': img_dir}
+
+        return ret_dict
 
     def __len__(self):
         '''
@@ -86,6 +96,76 @@ class DogCatImgLoader(data.Dataset):
         :return: the number of samples in data list
         '''
         return len(self.data_list)
+
+
+'''
+#2.1)  DEFINED DATA LOADER 
+'''
+
+class ImgCamLoader(data.Dataset):
+    def __init__(self, root_path, list_file, transform=None):
+
+        self.root_path = root_path  # original images path
+        self.list_file = list_file  # corresponding label dir of data
+        self.transform = transform  # image transform function
+        self.data_list = self.extract_annotation()  # data list: [image_name, image_id]
+        self.img_tra = self.img_transform()
+
+    def extract_annotation(self):
+        f = open(self.list_file, 'r')
+        value_arr = json.load(f)
+        ret_arr = []
+        for vs in value_arr:
+            ret_arr.append(vs)
+        # demo ret_arr: [[image_name, image_id], ...
+        return ret_arr
+
+    def img_transform(self, crop_size=224, scale_size=256):
+        trans_test = torchvision.transforms.Compose([
+            GroupScale(int(scale_size)),
+            GroupCenterCrop(int(crop_size))])
+        return trans_test
+
+    def _load_image(self, img_dir):
+        '''
+        :param img_dir: original image path
+        :return: digital data of orignal image
+        '''
+        img_dir = os.path.join(self.root_path, img_dir)
+        try:
+            return [Image.open(img_dir).convert('RGB')]
+        except Exception:
+            print('error loading image:', img_dir)
+            return [Image.open(img_dir).convert('RGB')]
+
+    def __getitem__(self, index):
+        '''
+        describe: default function of data-loader class
+        :param index:
+        :return: training data(process data), training label(label)
+        '''
+        record = self.data_list[index]
+        img_dir = record[0]
+        label = record[1]
+        # img_dir = os.path.join(self.root_path, img_dir)
+        img_val = self._load_image(img_dir)  # digital data
+        process_data = self.transform(img_val)  # data augmentation and normalization
+        # img_val = self.img_tra(img_val)
+
+        # dict_info = {'img_dir': img_dir, 'img_val': img_val}
+        return_dict = {'index': index, 'data':process_data, 'label':label, 'img_dir': img_dir}
+
+        # return index, process_data, label, dict_info # , img_val, img_dir
+        return return_dict
+
+    def __len__(self):
+        '''
+        Description: default function of data-loader class
+        :return: the number of samples in data list
+        '''
+        return len(self.data_list)
+
+
 
 '''
 #3) TEST DEMOS
@@ -154,10 +234,33 @@ def test1():
         print(data.shape)
         print(labels)
 
+
+def test2():
+    root_p = 'D:/CODES_WATL/Codes_For_Image_Classifing/data/DogCat/train'
+    file_dir = 'D:/CODES_WATL/Codes_For_Image_Classifing/senet.pytorch-master/Labels/dc_val.json'
+    file_dir1 = 'D:/CODES_WATL/Codes_For_Image_Classifing/senet.pytorch-master/Labels/dc_train.json'
+    transform = train_transform(crop_size=224)
+    # data_loader = DogCatImgLoader(root_p, file_dir1, transform)
+    data_loader = ImgCamLoader(root_p, file_dir1)
+
+    loader = DataLoader(dataset=data_loader, batch_size=16, shuffle=True, num_workers=8)
+    start_time = time.time()
+    for epoch in range(1):
+        for i, value in enumerate(loader):
+            idnexs, data, labels, img_val, img_dir = value
+            print(data.shape)
+            print(labels)
+            print(img_val)
+            print(img_dir)
+
+    print('cost time: ', time.time()-start_time)
+
+
 if __name__ == '__main__':
     # test_dataloader()
     # test_dataloader1()
-    test1()
+    # test1()
+    test2()
 
 
 

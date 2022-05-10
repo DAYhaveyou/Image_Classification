@@ -2,8 +2,6 @@
     "experiment_name":"basemodel_demo2",
 
     "model":"basenet",
-    "load_trained_paras": false,
-    "trained_paras_dir": "",
 
     "train_print_freq": 20,
 
@@ -26,17 +24,25 @@
     "file_path": {
         "train": "/data/lzq/education/data/train",
         "val": "/data/lzq/education/data/train",
-        "test": ""
+        "test": "/data/lzq/education/data/train"
     },
     "annotation_path": {
-      "train": "Labels/dc_train.json",
-      "val": "Labels/dc_val.json",
-      "test": ""
+        "train": "Labels/dc_train.json",
+        "val": "Labels/dc_val.json",
+        "test": "Labels/dc_val.json",
+        "negative": "Labels/negative_test.json"
     },
 
     "pretrain": true,
     "backbone": {
         "resnet50": "/data/lzq/education/pretrain_parameters/resnet50/resnet50-19c8e357.pth"
-    }
+    },
+    "load_trained_paras": true,
+    "trained_paras_dir": "/data/lzq/education/dogcat_classify/Output_Files/CheckPoints/basemodel_demo2_best.pth.tar",
+
+    "eigen_smooth": true,
+    "GPU": true,
+
+    "tsne_gpu": false
 
 }

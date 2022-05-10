@@ -7,31 +7,12 @@ import os
 import time
 from DataLoader.data_loader import DogCatImgLoader, train_transform, test_transform
 from torch.utils.data import DataLoader
-from Util.util import load_config_file, accuracy, AverageMeter, CheckpointMeter, _loger
+from Util.util import load_config_file, accuracy, AverageMeter, CheckpointMeter, _loger, check_output_path, load_model
 from model import Model
 
 # USED GPU ID
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 device = torch.device('cuda')
-
-
-def check_output_path(path, atx):
-    file_dir = os.path.join(path, atx)
-    if not os.path.exists(file_dir):
-        print("Create New File Directory: ", file_dir)
-        os.makedirs(file_dir)
-    return file_dir
-
-
-def load_model(arg_paras):
-    ''' load training model '''
-    _model = Model(arg_paras)
-    model = _model.select_model(arg_paras['model'])
-    if arg_paras['load_trained_paras']:
-        # load pre-trained parameters
-        if os.path.exists(arg_paras['trained_paras_dir']):
-            model.load_state_dict(torch.load(arg_paras['trained_paras_dir']))
-    return model.to(device)
 
 
 def validation(model, data_loader, logger):
@@ -69,7 +50,10 @@ def train(model, train_loader, arg_paras, logger, optimizer, criterion, epoch):
     iter_loader = iter(train_loader)
     for i in range(epoch_steps):
         data_time.update(time.time()-time_stamp)
-        _, data, labels = next(iter_loader)
+        # _, data, labels = next(iter_loader)
+        value = next(iter_loader)
+        data = value['data']
+        labels = value['label']
         input = data.cuda()
         label = labels.cuda()
 
@@ -122,6 +106,8 @@ def main():
 
     # 2) load model and set optimizer
     model = load_model(arg_paras)
+    if arg_paras['GPU']:
+        model = model.to(device)
 
     # optimizer = optim.Adam(model.parameters(), lr=arg_paras['learning_rate'], weight_decay=arg_paras['weight_decay'])
     optimizer = optim.SGD(model.parameters(), lr=arg_paras['learning_rate'], weight_decay=arg_paras['weight_decay'])

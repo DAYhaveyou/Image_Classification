@@ -3,6 +3,7 @@ import os
 import logging
 import datetime
 import torch
+from model import Model
 # from config_load import ActivityConfig as cfg
 
 
@@ -140,3 +141,30 @@ def pre_transfer_state_dict(pretrained_dict, model_dict):
             print("Missing key(s) in state_dict :{}".format(layer_name))
 
     return model_dict
+
+
+def check_output_path(path, atx):
+    file_dir = os.path.join(path, atx)
+    if not os.path.exists(file_dir):
+        print("Create New File Directory: ", file_dir)
+        os.makedirs(file_dir)
+    return file_dir
+
+
+def load_model(arg_paras):
+    ''' load training model '''
+    _model = Model(arg_paras)
+    model = _model.select_model(arg_paras['model'])
+    if arg_paras['load_trained_paras']:
+        # load pre-trained parameters
+        if os.path.exists(arg_paras['trained_paras_dir']):
+            model.load_state_dict(torch.load(arg_paras['trained_paras_dir']))
+    return model
+
+
+def record_negative_samples(img_arr, arg_paras):
+    file_p = arg_paras['annotation_path']['negative']
+    f = open(file_p, 'w')
+    json.dump(img_arr, f)
+    f.close()
+    print('Storage Negative Samples Successfully!: ', file_p)
